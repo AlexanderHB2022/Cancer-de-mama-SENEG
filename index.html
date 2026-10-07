@@ -18,8 +18,12 @@
 <div class="shell">
   <main id="contenido" tabindex="-1">
 
-    <!-- ============ PORTADA ============ -->
-    <section class="vista" id="vista-portada" aria-labelledby="titulo-portada">
+    <!-- ============ ENCUESTA (una sola página, como Google Forms) ============ -->
+    <section class="vista" id="vista-encuesta" aria-labelledby="titulo-portada">
+      <div class="progreso-fijo barra-encuesta" aria-hidden="true">
+        <div class="progreso-pista"><div class="progreso-relleno" id="progreso-relleno"></div></div>
+      </div>
+
       <div class="banner" aria-hidden="true">
         <svg viewBox="0 0 64 96" class="banner-mono">
           <path d="M18 88 32 52C40 34 46 24 44 15 42 5 22 5 20 15 18 24 24 34 32 52L46 88" fill="none" stroke="currentColor" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
@@ -32,39 +36,22 @@
         <p>Tu pregunta puede ayudar a que otras personas también encuentren respuestas.</p>
         <p class="texto-suave">Comunidad Tec · Campus Sinaloa · 5 preguntas · 1 a 2 minutos · Anónima: no pedimos nombre ni correo.</p>
         <hr>
-        <p class="nota-requerida">* Indica que la pregunta es obligatoria</p>
-      </div>
-
-      <div class="acciones portada-acciones">
-        <button type="button" class="btn btn-primario" id="btn-comenzar">Comenzar encuesta <span aria-hidden="true">→</span></button>
-        <button type="button" class="btn btn-texto" id="btn-continuar" hidden>Continuar donde me quedé</button>
-      </div>
-    </section>
-
-    <!-- ============ ENCUESTA ============ -->
-    <section class="vista" id="vista-encuesta" hidden aria-label="Encuesta">
-      <div class="card card-titulo card-titulo-compacta barra-encuesta">
-        <div class="cabecera-compacta">
-          <button type="button" class="form-titulo-chico" id="btn-marca" title="Volver a la portada">Octubre Rosa</button>
-          <span class="texto-suave">Comunidad Tec · Campus Sinaloa</span>
+        <div class="titulo-pie">
+          <p class="nota-requerida">* Indica que la pregunta es obligatoria</p>
+          <p class="texto-suave" id="progreso-etiqueta" aria-live="polite">0 de 5 respondidas</p>
         </div>
-        <div class="progreso">
-          <div class="progreso-pista" role="progressbar" aria-label="Progreso de la encuesta" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="progreso-barra">
-            <div class="progreso-relleno" id="progreso-relleno"></div>
-          </div>
-          <span class="progreso-texto"><span id="progreso-etiqueta" aria-live="polite">Pregunta 1 de 5</span> <span class="sr-only" id="progreso-porcentaje">0%</span></span>
-        </div>
+        <p class="aviso-borrador texto-suave" id="aviso-borrador" hidden>Recuperamos las respuestas que dejaste pendientes.</p>
       </div>
 
       <form id="formulario" novalidate>
-        <!-- Paso 1 -->
+        <!-- Pregunta 1 -->
         <fieldset class="card pregunta paso" data-paso="1">
           <legend class="pregunta-titulo">¿Cuál es tu rol en la comunidad Tec? <span class="req" aria-label="obligatoria">*</span></legend>
           <div class="opciones" id="opciones-rol"></div>
         </fieldset>
 
-        <!-- Paso 2 -->
-        <fieldset class="card pregunta paso" data-paso="2" hidden>
+        <!-- Pregunta 2 -->
+        <fieldset class="card pregunta paso" data-paso="2">
           <legend class="pregunta-titulo">¿Qué tanto consideras que sabes sobre el cáncer de mama? <span class="req" aria-label="obligatoria">*</span></legend>
           <div class="escala">
             <span class="escala-extremo">Muy poco</span>
@@ -77,15 +64,15 @@
           </div>
         </fieldset>
 
-        <!-- Paso 3 -->
-        <fieldset class="card pregunta paso" data-paso="3" hidden>
+        <!-- Pregunta 3 -->
+        <fieldset class="card pregunta paso" data-paso="3">
           <legend class="pregunta-titulo">¿Qué temas sobre el cáncer de mama te generan más dudas? <span class="req" aria-label="obligatoria">*</span></legend>
           <p class="pregunta-ayuda">Selecciona todos los que correspondan.</p>
           <div class="opciones" id="opciones-temas"></div>
         </fieldset>
 
         <!-- Paso 4: pregunta principal -->
-        <div class="card pregunta pregunta-principal paso" data-paso="4" hidden>
+        <div class="card pregunta pregunta-principal paso" data-paso="4">
           <p class="etiqueta-principal">Pregunta principal</p>
           <label class="pregunta-titulo" for="pregunta_experto">¿Qué le preguntarías a un experto en cáncer de mama para resolver tus dudas? <span class="req" aria-label="obligatoria">*</span></label>
           <p class="pregunta-ayuda" id="ayuda-principal">Tu pregunta puede ser sobre cualquier aspecto del cáncer de mama.</p>
@@ -96,8 +83,8 @@
           </div>
         </div>
 
-        <!-- Paso 5 -->
-        <div class="card pregunta paso" data-paso="5" hidden>
+        <!-- Pregunta 5 -->
+        <div class="card pregunta paso" data-paso="5">
           <label class="pregunta-titulo" for="otro_tema">¿Hay algún otro tema relacionado con el cáncer de mama que te gustaría que se abordara?</label>
           <p class="pregunta-ayuda">Opcional</p>
           <textarea id="otro_tema" name="otro_tema" rows="3" maxlength="300" placeholder="Tu respuesta" aria-describedby="contador-otro"></textarea>
@@ -108,14 +95,12 @@
 
         <p class="error-envio" id="error-envio" role="alert" hidden></p>
 
-        <div class="acciones navegacion">
-          <button type="button" class="btn btn-secundario" id="btn-atras">Atrás</button>
-          <button type="button" class="btn btn-primario" id="btn-siguiente" disabled>Siguiente</button>
-          <button type="submit" class="btn btn-primario" id="btn-enviar" hidden disabled>
-            <span class="btn-etiqueta">Enviar respuesta</span>
+        <div class="acciones envio">
+          <button type="submit" class="btn btn-primario" id="btn-enviar">
+            <span class="btn-etiqueta">Enviar</span>
             <span class="spinner" aria-hidden="true"></span>
           </button>
-          <span class="pista-requerida" id="pista-requerida" aria-live="polite"></span>
+          <button type="button" class="btn btn-texto btn-borrar" id="btn-borrar">Borrar formulario</button>
         </div>
       </form>
     </section>

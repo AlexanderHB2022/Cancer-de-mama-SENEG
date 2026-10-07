@@ -9,7 +9,7 @@ Es HTML, CSS y JavaScript puro. No usa frameworks ni pasos de compilación, así
 ## Estructura
 
 ```
-index.html              Portada, encuesta, confirmación y panel de administrador
+index.html              Formulario, confirmación y panel de administrador
 css/styles.css          Estilos (claro/oscuro, responsive)
 js/config.js            Configuración: URL de Google Apps Script, límites, nombre del CSV
 js/storage.js           Guardado de respuestas (Google Sheets, Artifact de Claude o modo demo)
@@ -21,22 +21,26 @@ tests/e2e.mjs           Pruebas automáticas de punta a punta (Playwright)
 
 ## La encuesta
 
-1. **Portada**: *Octubre Rosa*, con la etiqueta *Comunidad Tec · Campus Sinaloa* y el botón *Comenzar encuesta →*.
-2. **Cinco preguntas, una por pantalla**, con barra de progreso:
+Funciona como un formulario de Google Forms: todo está en una sola página.
+
+1. **Encabezado**: franja rosa con el moño y la tarjeta del título (*Octubre Rosa*, subtítulo, *Comunidad Tec · Campus Sinaloa* y la nota de campos obligatorios).
+2. **Cinco preguntas, una por tarjeta**:
    1. Rol en la comunidad Tec (obligatoria)
    2. Qué tanto sabes sobre el cáncer de mama, del 1 al 5 (obligatoria)
    3. Temas que te generan más dudas, selección múltiple (obligatoria)
    4. **Pregunta principal** para el experto, hasta 500 caracteres con contador (obligatoria)
    5. Otro tema que te gustaría que se abordara (opcional)
-3. **Confirmación**: agradecimiento y la pregunta que se envió.
+3. **Enviar** y la pantalla de agradecimiento.
 
 Detalles de calidad incluidos:
 
-- *Siguiente* está deshabilitado hasta contestar la pregunta obligatoria.
-- **Ninguna respuesta se pierde**: el avance se guarda como borrador en el navegador. Si la persona recarga o cierra la página, puede *Continuar donde se quedó*.
+- Si se intenta enviar con preguntas obligatorias vacías, esas tarjetas se marcan en rojo con *Esta pregunta es obligatoria* y la página baja a la primera. El aviso desaparece al contestar.
+- Una barra delgada fija arriba y el contador *N de 5 respondidas* muestran el avance.
+- **Ninguna respuesta se pierde**: lo que se va contestando se guarda como borrador en el navegador. Si la persona recarga o cierra la página, sus respuestas siguen ahí.
+- *Borrar formulario* pide un segundo clic para confirmar.
 - **Sin duplicados**: cada envío lleva un identificador único. Un doble clic o un reintento tras un error no crea un segundo registro.
 - Mientras se guarda aparece un indicador de carga, y si el guardado falla se muestra un error. Las respuestas siguen en pantalla para reintentar.
-- Se puede contestar con teclado (Enter avanza; Ctrl + Enter en los campos de texto), funciona con lectores de pantalla y respeta *reducir movimiento*.
+- Se puede contestar con teclado (Ctrl + Enter en los campos de texto envía), funciona con lectores de pantalla y respeta *reducir movimiento*.
 - Es anónima: no pide nombre, correo, teléfono ni datos médicos personales.
 
 ## Panel de administrador
@@ -130,8 +134,8 @@ npm test               # o: node tests/e2e.mjs capturas/   (guarda capturas y el
 
 Las pruebas recorren la encuesta completa en escritorio y en móvil (390 px). Verifican:
 
-- validación de preguntas obligatorias, barra de progreso y contador;
-- recuperación del borrador al recargar;
+- marcado de preguntas obligatorias vacías, progreso y contador;
+- recuperación del borrador al recargar y el botón *Borrar formulario*;
 - que un doble clic en *Enviar* solo cree un registro;
 - estadísticas, búsqueda sin acentos y filtros del panel;
 - el CSV: BOM, encabezados, escape de comas, comillas, saltos de línea y acentos, y neutralización de fórmulas;

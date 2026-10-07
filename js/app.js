@@ -10,7 +10,6 @@
   const CSV_FILENAME = CFG.CSV_FILENAME || "respuestas_octubre_rosa.csv";
   const BORRADOR_KEY = "octubreRosa.borrador.v1";
   const CLAVE_KEY = "octubreRosa.claveAdmin";
-  const TOTAL_PASOS = 5;
   const TIEMPO_LIMITE_MS = 20000;
 
   const ROLES = [
@@ -83,7 +82,6 @@
 
   /* ================= Vistas y rutas ================= */
   const vistas = {
-    portada: $("#vista-portada"),
     encuesta: $("#vista-encuesta"),
     confirmacion: $("#vista-confirmacion"),
     admin: $("#vista-admin"),
@@ -101,28 +99,26 @@
     if (location.hash === "#admin") {
       abrirAdmin();
     } else if (vistaActual === "admin" || vistaActual === null) {
-      irAPortada();
+      irAEncuesta();
     }
   }
   window.addEventListener("hashchange", enrutar);
 
-  /* ================= Encuesta ================= */
+  /* ================= Encuesta (una sola página) ================= */
+  const VACIAS = () => ({ rol: "", nivel_conocimiento: 0, temas: [], pregunta_experto: "", otro_tema: "" });
   const estado = {
-    paso: 1,
-    respuestas: { rol: "", nivel_conocimiento: 0, temas: [], pregunta_experto: "", otro_tema: "" },
+    respuestas: VACIAS(),
     envioId: nuevoId(),
     enviando: false,
+    intentoEnviar: false, // los errores se muestran después del primer intento, como en Forms
   };
 
   const form = $("#formulario");
-  const pasos = $$(".paso");
-  const btnAtras = $("#btn-atras");
-  const btnSiguiente = $("#btn-siguiente");
+  const tarjetas = $$(".paso");
   const btnEnviar = $("#btn-enviar");
   const taPregunta = $("#pregunta_experto");
   const taOtro = $("#otro_tema");
   const errorEnvio = $("#error-envio");
-  const pista = $("#pista-requerida");
 
   taPregunta.maxLength = MAX_PREGUNTA;
   taOtro.maxLength = MAX_OTRO;
@@ -145,23 +141,30 @@
   ROLES.forEach((r, i) => $("#opciones-rol").appendChild(crearOpcion("radio", "rol", r, i)));
   TEMAS.forEach((t, i) => $("#opciones-temas").appendChild(crearOpcion("checkbox", "temas", t, i)));
 
-  function pasoValido(n) {
+  // Mensaje de error de cada pregunta obligatoria (1–4).
+  tarjetas.slice(0, 4).forEach((t) => {
+    const p = document.createElement("p");
+    p.className = "error-campo";
+    p.id = "error-campo-" + t.dataset.paso;
+    p.hidden = true;
+    p.innerHTML = '<span aria-hidden="true">!</span> Esta pregunta es obligatoria';
+    t.appendChild(p);
+  });
+
+  function preguntaValida(n) {
     const r = estado.respuestas;
     switch (n) {
       case 1: return ROLES.includes(r.rol);
       case 2: return r.nivel_conocimiento >= 1 && r.nivel_conocimiento <= 5;
       case 3: return r.temas.length > 0;
       case 4: return r.pregunta_experto.trim().length >= 3;
-      case 5: return true;
-      default: return false;
+      default: return true;
     }
   }
-  const MENSAJES_REQUERIDOS = {
-    1: "Elige tu rol para continuar.",
-    2: "Elige un número del 1 al 5 para continuar.",
-    3: "Elige al menos un tema para continuar.",
-    4: "Escribe tu pregunta para continuar.",
-  };
+  function preguntaContestada(n) {
+    return n === 5 ? estado.respuestas.otro_tema.trim().length > 0 : preguntaValida(n);
+  }
+  const faltantes = () => [1, 2, 3, 4].filter((n) => !preguntaValida(n));
 
   function leerFormulario() {
     const r = estado.respuestas;
@@ -195,120 +198,53 @@
   }
 
   function actualizarUI() {
-    const n = estado.paso;
-    const valido = pasoValido(n);
-    const ultimo = n === TOTAL_PASOS;
+    const contestadas = [1, 2, 3, 4, 5].filter(preguntaContestada).length;
+    $("#progreso-etiqueta").textContent = contestadas + " de 5 respondidas";
+    $("#progreso-relleno").style.width = (contestadas / 5) * 100 + "%";
 
-    btnAtras.classList.toggle("invisible", n === 1);
-    btnAtras.disabled = n === 1 || estado.enviando;
-    btnSiguiente.hidden = ultimo;
-    btnSiguiente.disabled = !valido;
-    btnEnviar.hidden = !ultimo;
-    btnEnviar.disabled = estado.enviando || !todosValidos();
-
-    pista.textContent = valido || ultimo ? "" : (MENSAJES_REQUERIDOS[n] || "");
-
-    const completados = (n - 1) + (valido && n !== TOTAL_PASOS ? 1 : 0) + (ultimo ? 1 : 0);
-    const pct = Math.round((Math.min(completados, TOTAL_PASOS) / TOTAL_PASOS) * 100);
-    $("#progreso-etiqueta").textContent = "Pregunta " + n + " de " + TOTAL_PASOS;
-    $("#progreso-porcentaje").textContent = pct + "%";
-    $("#progreso-relleno").style.width = pct + "%";
-    $("#progreso-barra").setAttribute("aria-valuenow", String(pct));
-  }
-
-  function todosValidos() {
-    for (let i = 1; i <= TOTAL_PASOS; i++) if (!pasoValido(i)) return false;
-    return true;
+    tarjetas.slice(0, 4).forEach((t) => {
+      const n = Number(t.dataset.paso);
+      const mostrar = estado.intentoEnviar && !preguntaValida(n);
+      t.classList.toggle("con-error", mostrar);
+      $("#error-campo-" + n).hidden = !mostrar;
+      const control = t.querySelector("textarea") || t;
+      if (mostrar) control.setAttribute("aria-invalid", "true");
+      else control.removeAttribute("aria-invalid");
+    });
+    btnEnviar.disabled = estado.enviando;
   }
 
   function guardarBorrador() {
-    escribirLS(BORRADOR_KEY, { paso: estado.paso, respuestas: estado.respuestas, envioId: estado.envioId, guardado: Date.now() });
+    escribirLS(BORRADOR_KEY, { respuestas: estado.respuestas, envioId: estado.envioId, guardado: Date.now() });
   }
-
   function hayBorrador(b) {
     if (!b || !b.respuestas) return false;
     const r = b.respuestas;
     return !!(r.rol || r.nivel_conocimiento || (r.temas && r.temas.length) || (r.pregunta_experto || "").trim() || (r.otro_tema || "").trim());
   }
 
-  function irAPaso(n, direccion) {
-    n = Math.max(1, Math.min(TOTAL_PASOS, n));
-    estado.paso = n;
-    pasos.forEach((p) => {
-      const activo = Number(p.dataset.paso) === n;
-      p.hidden = !activo;
-      p.classList.remove("entrando-adelante", "entrando-atras");
-      if (activo && direccion) {
-        void p.offsetWidth; // reinicia la animación
-        p.classList.add(direccion === "atras" ? "entrando-atras" : "entrando-adelante");
-      }
-    });
-    errorEnvio.hidden = true;
-    actualizarUI();
-    guardarBorrador();
-    enfocarPaso(n);
-  }
-
-  function enfocarPaso(n) {
-    const paso = pasos[n - 1];
-    // En móvil no se abre el teclado automáticamente salvo en la pregunta principal.
-    requestAnimationFrame(() => {
-      const objetivo = paso.querySelector("textarea") ||
-        paso.querySelector("input:checked") || paso.querySelector("input");
-      if (!objetivo) return;
-      const esTexto = objetivo.tagName === "TEXTAREA";
-      const pantallaTactil = window.matchMedia("(hover: none)").matches;
-      if (esTexto && pantallaTactil && n !== 4) return;
-      objetivo.focus({ preventScroll: true });
-    });
-    const barra = $(".barra-encuesta");
-    if (barra && window.scrollY > barra.offsetTop) window.scrollTo({ top: 0, behavior: "smooth" });
-  }
-
-  function siguiente() {
-    leerFormulario();
-    if (!pasoValido(estado.paso)) {
-      actualizarUI();
-      pasos[estado.paso - 1].animate(
-        [{ transform: "translateX(0)" }, { transform: "translateX(-6px)" }, { transform: "translateX(6px)" }, { transform: "translateX(0)" }],
-        { duration: 260, easing: "ease-out" }
-      );
-      return;
-    }
-    if (estado.paso < TOTAL_PASOS) irAPaso(estado.paso + 1, "adelante");
-  }
-  function atras() {
-    if (estado.paso > 1 && !estado.enviando) irAPaso(estado.paso - 1, "atras");
-  }
-
-  form.addEventListener("input", () => {
+  function alCambiar() {
     leerFormulario();
     actualizarContadores();
     actualizarUI();
     guardarBorrador();
-  });
-  form.addEventListener("change", () => {
-    leerFormulario();
-    actualizarUI();
-    guardarBorrador();
-  });
-  btnSiguiente.addEventListener("click", siguiente);
-  btnAtras.addEventListener("click", atras);
+    errorEnvio.hidden = true;
+    reiniciarBorrar();
+  }
+  form.addEventListener("input", alCambiar);
+  form.addEventListener("change", alCambiar);
 
   form.addEventListener("keydown", (e) => {
     if (e.key !== "Enter" || estado.enviando) return;
     const t = e.target;
     if (t.tagName === "TEXTAREA") {
-      if (e.ctrlKey || e.metaKey) {
-        e.preventDefault();
-        if (estado.paso === TOTAL_PASOS) form.requestSubmit(); else siguiente();
-      }
+      if (e.ctrlKey || e.metaKey) { e.preventDefault(); form.requestSubmit(); }
       return;
     }
     if (t.tagName === "INPUT") {
+      // Enter no envía el formulario por accidente; en casillas, las marca.
       e.preventDefault();
-      if (t.type === "checkbox") { t.checked = !t.checked; t.dispatchEvent(new Event("change", { bubbles: true })); return; }
-      if (estado.paso === TOTAL_PASOS) form.requestSubmit(); else siguiente();
+      if (t.type === "checkbox") { t.checked = !t.checked; t.dispatchEvent(new Event("change", { bubbles: true })); }
     }
   });
 
@@ -316,9 +252,15 @@
     e.preventDefault();
     if (estado.enviando) return; // evita doble envío
     leerFormulario();
-    if (!todosValidos()) {
-      const primero = [1, 2, 3, 4].find((n) => !pasoValido(n));
-      if (primero) irAPaso(primero, "atras");
+    estado.intentoEnviar = true;
+    actualizarUI();
+
+    const pendientes = faltantes();
+    if (pendientes.length) {
+      const tarjeta = tarjetas[pendientes[0] - 1];
+      tarjeta.scrollIntoView({ behavior: "smooth", block: "center" });
+      const foco = tarjeta.querySelector("textarea") || tarjeta.querySelector("input");
+      if (foco) foco.focus({ preventScroll: true });
       return;
     }
 
@@ -350,7 +292,7 @@
     } finally {
       estado.enviando = false;
       btnEnviar.classList.remove("cargando");
-      btnEnviar.querySelector(".btn-etiqueta").textContent = "Enviar respuesta";
+      btnEnviar.querySelector(".btn-etiqueta").textContent = "Enviar";
       actualizarUI();
     }
   });
@@ -365,11 +307,37 @@
   }
 
   function reiniciarEncuesta() {
-    estado.respuestas = { rol: "", nivel_conocimiento: 0, temas: [], pregunta_experto: "", otro_tema: "" };
+    estado.respuestas = VACIAS();
     estado.envioId = nuevoId();
-    estado.paso = 1;
+    estado.intentoEnviar = false;
     escribirFormulario();
+    actualizarUI();
+    $("#aviso-borrador").hidden = true;
   }
+
+  // "Borrar formulario" pide confirmación con un segundo clic (los diálogos
+  // del navegador no funcionan dentro de un Artifact).
+  const btnBorrar = $("#btn-borrar");
+  let borrarTimer = null;
+  function reiniciarBorrar() {
+    clearTimeout(borrarTimer);
+    btnBorrar.classList.remove("confirmar");
+    btnBorrar.textContent = "Borrar formulario";
+  }
+  btnBorrar.addEventListener("click", () => {
+    if (!btnBorrar.classList.contains("confirmar")) {
+      btnBorrar.classList.add("confirmar");
+      btnBorrar.textContent = "¿Borrar todas tus respuestas? Haz clic de nuevo";
+      borrarTimer = setTimeout(reiniciarBorrar, 5000);
+      return;
+    }
+    reiniciarBorrar();
+    escribirLS(BORRADOR_KEY, null);
+    reiniciarEncuesta();
+    errorEnvio.hidden = true;
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    toast("Se borraron tus respuestas");
+  });
 
   function mostrarConfirmacion(pregunta) {
     $("#cita-texto").textContent = pregunta;
@@ -378,41 +346,22 @@
     requestAnimationFrame(() => $("#titulo-gracias").focus({ preventScroll: true }));
   }
 
-  function iniciarEncuesta(continuar) {
-    if (!continuar) {
-      reiniciarEncuesta();
-      escribirLS(BORRADOR_KEY, null);
-    }
-    mostrarVista("encuesta");
-    irAPaso(estado.paso, "adelante");
-  }
-
-  function irAPortada() {
+  function irAEncuesta() {
     const b = leerLS(BORRADOR_KEY);
     const conBorrador = hayBorrador(b);
     if (conBorrador) {
-      estado.respuestas = Object.assign({ rol: "", nivel_conocimiento: 0, temas: [], pregunta_experto: "", otro_tema: "" }, b.respuestas);
-      estado.paso = Math.max(1, Math.min(TOTAL_PASOS, Number(b.paso) || 1));
+      estado.respuestas = Object.assign(VACIAS(), b.respuestas);
       if (b.envioId) estado.envioId = b.envioId;
       escribirFormulario();
     }
-    $("#btn-continuar").hidden = !conBorrador;
-    $("#btn-comenzar").firstChild.textContent = conBorrador ? "Empezar de nuevo " : "Comenzar encuesta ";
-    $("#btn-comenzar").classList.toggle("btn-primario", !conBorrador);
-    $("#btn-comenzar").classList.toggle("btn-texto", conBorrador);
-    $("#btn-continuar").classList.toggle("btn-primario", conBorrador);
-    $("#btn-continuar").classList.toggle("btn-texto", !conBorrador);
-    if (conBorrador) $(".portada-acciones").prepend($("#btn-continuar"));
-    else $(".portada-acciones").prepend($("#btn-comenzar"));
-    mostrarVista("portada");
+    $("#aviso-borrador").hidden = !conBorrador;
+    actualizarUI();
+    mostrarVista("encuesta");
   }
 
-  $("#btn-comenzar").addEventListener("click", () => iniciarEncuesta(false));
-  $("#btn-continuar").addEventListener("click", () => iniciarEncuesta(true));
-  $("#btn-marca").addEventListener("click", irAPortada);
   $("#btn-inicio").addEventListener("click", () => {
     if (location.hash) history.replaceState(null, "", location.pathname + location.search);
-    irAPortada();
+    irAEncuesta();
   });
 
   /* ================= Panel de administrador ================= */
@@ -421,7 +370,7 @@
 
   function salirAdmin() {
     if (location.hash === "#admin") history.replaceState(null, "", location.pathname + location.search);
-    irAPortada();
+    irAEncuesta();
   }
   $("#btn-salir-admin").addEventListener("click", salirAdmin);
   $("#btn-cancelar-acceso").addEventListener("click", salirAdmin);

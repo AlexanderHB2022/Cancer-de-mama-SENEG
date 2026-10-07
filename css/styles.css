@@ -109,18 +109,15 @@ main:has(#vista-admin:not([hidden])) { max-width: 1040px; }
 }
 .banner-mono { width: 52px; height: 78px; opacity: .9; }
 
-/* Encabezado compacto de la encuesta */
-.card-titulo-compacta { gap: 14px; padding-bottom: 18px; }
-.cabecera-compacta { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; }
-.form-titulo-chico {
-  background: none; border: 0; padding: 0; cursor: pointer;
-  font-size: 24px; font-weight: 400; color: var(--texto);
+/* Barra de progreso delgada, fija arriba mientras se recorre el formulario */
+.progreso-fijo {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 10;
+  margin: -12px -16px 0; padding: 0;
 }
-.form-titulo-chico:hover { color: var(--tema-oscuro); }
-.progreso { display: flex; align-items: center; gap: 12px; }
-.progreso-pista { flex: 1; height: 10px; border-radius: 5px; background: var(--linea); overflow: hidden; }
-.progreso-relleno { height: 100%; width: 0; background: var(--tema); border-radius: 5px; transition: width .3s ease; }
-.progreso-texto { font-size: 14px; color: var(--suave); white-space: nowrap; }
+.progreso-pista { height: 4px; background: var(--linea); overflow: hidden; }
+.progreso-relleno { height: 100%; width: 0; background: var(--tema); transition: width .3s ease; }
+.titulo-pie { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 16px; }
+.aviso-borrador { margin-top: -4px; }
 
 /* ---------- Preguntas ---------- */
 fieldset.card { min-inline-size: 0; display: block; }
@@ -131,8 +128,13 @@ legend.pregunta-titulo + * { clear: both; }
 .pregunta-titulo { display: block; width: 100%; padding: 0; font-size: 16px; font-weight: 400; line-height: 1.5; margin-bottom: 16px; }
 .req { color: var(--error); }
 .pregunta-ayuda { font-size: 14px; color: var(--suave); margin: -10px 0 16px; }
-.paso.entrando-adelante, .paso.entrando-atras { animation: aparecer .2s ease both; }
-@keyframes aparecer { from { opacity: 0; } to { opacity: 1; } }
+/* Pregunta obligatoria sin contestar (tras intentar enviar), como en Forms */
+.card.con-error { border-color: var(--error); }
+.error-campo { display: flex; align-items: center; gap: 8px; margin-top: 12px; font-size: 12px; color: var(--error); }
+.error-campo span {
+  display: inline-grid; place-items: center; width: 16px; height: 16px; border-radius: 50%;
+  background: var(--error); color: var(--tarjeta); font-size: 11px; font-weight: 700;
+}
 
 /* Radios y casillas estilo Material */
 .opciones { display: flex; flex-direction: column; }
@@ -225,8 +227,8 @@ textarea::placeholder { color: var(--suave); }
 .btn-secundario:hover:not(:disabled) { background: var(--tema-tinte); }
 .btn-texto { background: transparent; color: var(--tema-oscuro); padding-inline: 12px; }
 .btn-texto:hover { background: var(--tema-tinte); }
-.navegacion #btn-atras.invisible { display: none; }
-.pista-requerida { font-size: 14px; color: var(--suave); }
+.envio { justify-content: space-between; }
+.btn-borrar.confirmar { color: var(--error); }
 
 .spinner {
   display: none; width: 16px; height: 16px; border-radius: 50%;
@@ -345,9 +347,8 @@ mark { background: #FEEFC3; color: #202124; padding: 0 1px; }
   .escala { flex-wrap: wrap; }
   .escala-extremo { display: none; }
   .escala::after { content: "1 = Muy poco · 5 = Mucho"; flex-basis: 100%; text-align: center; font-size: 13px; color: var(--suave); }
-  .navegacion .btn { min-height: 48px; }
-  .navegacion #btn-siguiente, .navegacion #btn-enviar { flex: 1; }
-  .portada-acciones .btn { width: 100%; min-height: 48px; }
+  .envio { flex-direction: column; align-items: stretch; }
+  .envio .btn { min-height: 48px; }
   .kpis { grid-template-columns: minmax(0, 1fr); gap: 8px; }
   .btn-csv { align-self: stretch; }
   .card-tabla { padding-top: 20px; }

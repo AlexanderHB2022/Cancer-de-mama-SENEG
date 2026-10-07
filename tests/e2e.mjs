@@ -28,23 +28,21 @@ const foto = async (page, nombre) => {
 const PREGUNTA = 'Si mi mamá tuvo cáncer, ¿a qué edad debo empezar a hacerme "mastografías", y cada cuánto?\nGracias, saludos.';
 
 async function contestar(page, { pregunta = PREGUNTA, otro = "Alimentación, y apoyo emocional" } = {}) {
-  await page.click("#btn-comenzar");
-  ok(await page.isDisabled("#btn-siguiente"), "Siguiente deshabilitado sin respuesta");
-  ok((await page.textContent("#progreso-etiqueta")) === "Pregunta 1 de 5", "Progreso: Pregunta 1 de 5");
+  ok((await page.textContent("#progreso-etiqueta")) === "0 de 5 respondidas", "Progreso inicial: 0 de 5");
+  // Enviar vacío: se marcan las 4 obligatorias, como en Google Forms.
+  await page.click("#btn-enviar");
+  ok((await page.locator(".card.con-error").count()) === 4, "Marca las 4 preguntas obligatorias vacías");
+  ok(await page.isVisible("#error-campo-1"), "Mensaje 'Esta pregunta es obligatoria'");
   await page.click("text=Estudiante profesional");
-  ok(!(await page.isDisabled("#btn-siguiente")), "Siguiente habilitado tras elegir rol");
-  await page.click("#btn-siguiente");
+  ok(await page.isHidden("#error-campo-1"), "El error desaparece al contestar");
   await page.click(".escala-op:has(#nivel-2)");
-  await page.click("#btn-siguiente");
-  ok(await page.isDisabled("#btn-siguiente"), "Temas: requiere al menos uno");
   await page.click("text=Detección temprana");
   await page.click("text=Mastografía");
-  await page.click("#btn-siguiente");
-  ok(await page.isVisible(".pregunta-principal"), "Pregunta principal visible");
+  ok((await page.textContent("#progreso-etiqueta")) === "3 de 5 respondidas", "Progreso se actualiza");
   await page.fill("#pregunta_experto", pregunta);
   ok((await page.textContent("#cuenta-principal")) === String(pregunta.length), "Contador de caracteres");
-  await page.click("#btn-siguiente");
   await page.fill("#otro_tema", otro);
+  ok((await page.locator(".card.con-error").count()) === 0, "Sin errores con todo contestado");
 }
 
 const browser = await chromium.launch({ executablePath: process.env.CHROMIUM || undefined });
@@ -58,16 +56,15 @@ const browser = await chromium.launch({ executablePath: process.env.CHROMIUM || 
   page.on("pageerror", (e) => errores.push(e.message));
   page.on("console", (m) => m.type() === "error" && !/fonts/.test(m.text()) && errores.push(m.text()));
   await page.goto(BASE);
-  await foto(page, "01-portada-escritorio");
-  ok((await page.textContent("h1")).includes("Octubre"), "Portada con título");
+  await foto(page, "01-formulario-vacio");
+  ok((await page.textContent("h1")).includes("Octubre"), "Encabezado con título");
 
   await contestar(page);
-  await foto(page, "02-pregunta-5");
+  await foto(page, "02-formulario-lleno");
 
   // Recarga a mitad: el borrador no se pierde.
   await page.reload();
-  ok(await page.isVisible("#btn-continuar"), "Borrador recuperable tras recargar");
-  await page.click("#btn-continuar");
+  ok(await page.isVisible("#aviso-borrador"), "Borrador recuperado tras recargar");
   ok((await page.inputValue("#otro_tema")).startsWith("Alimentación"), "Borrador conserva textos");
   ok((await page.inputValue("#pregunta_experto")) === PREGUNTA, "Borrador conserva pregunta principal");
 
@@ -80,8 +77,16 @@ const browser = await chromium.launch({ executablePath: process.env.CHROMIUM || 
   ok(n === 1, "Doble clic guarda un solo registro (" + n + ")");
 
   await page.click("#btn-inicio");
-  ok(await page.isVisible("#vista-portada"), "Volver al inicio");
-  ok(await page.isHidden("#btn-continuar"), "Sin borrador después de enviar");
+  ok(await page.isVisible("#vista-encuesta"), "Volver al inicio");
+  ok(await page.isHidden("#aviso-borrador"), "Sin borrador después de enviar");
+  ok((await page.inputValue("#pregunta_experto")) === "", "Formulario limpio para otra respuesta");
+
+  // Borrar formulario pide confirmación con un segundo clic.
+  await page.click("text=Profesor(a)");
+  await page.click("#btn-borrar");
+  ok(await page.isChecked("#rol-4"), "Primer clic en Borrar no borra");
+  await page.click("#btn-borrar");
+  ok(!(await page.isChecked("#rol-4")), "Segundo clic borra el formulario");
 
   // Segunda respuesta independiente con caracteres especiales.
   await contestar(page, { pregunta: '=SUMA(1,2) ¿"comillas", comas; y ñ?', otro: "" });
@@ -131,25 +136,20 @@ const browser = await chromium.launch({ executablePath: process.env.CHROMIUM || 
   const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, deviceScaleFactor: 2 });
   const page = await ctx.newPage();
   await page.goto(BASE);
-  await foto(page, "05-portada-movil");
+  await foto(page, "05-formulario-movil");
   const desborde = async () => page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 1);
-  ok(!(await desborde()), "Portada sin scroll horizontal");
-  await page.tap("#btn-comenzar");
+  ok(!(await desborde()), "Formulario sin scroll horizontal");
+  await page.tap("#btn-enviar");
+  await foto(page, "06-errores-movil");
   await page.tap("text=Profesor(a)");
-  await page.tap("#btn-siguiente");
   await page.tap(".escala-op:has(#nivel-4)");
-  await foto(page, "06-escala-movil");
-  await page.tap("#btn-siguiente");
   await page.tap("text=Prevención");
   await page.tap("text=Cáncer de mama en hombres");
-  await foto(page, "07-temas-movil");
-  await page.tap("#btn-siguiente");
   await page.fill("#pregunta_experto", "¿Los hombres también deben hacerse autoexploración?");
-  await foto(page, "08-principal-movil");
-  ok(!(await desborde()), "Encuesta sin scroll horizontal");
-  const alto = await page.evaluate(() => document.querySelector("#btn-siguiente").getBoundingClientRect().height);
+  await foto(page, "07-lleno-movil");
+  ok(!(await desborde()), "Sin scroll horizontal con contenido");
+  const alto = await page.evaluate(() => document.querySelector("#btn-enviar").getBoundingClientRect().height);
   ok(alto >= 48, "Botones táctiles ≥ 48px (" + alto + ")");
-  await page.tap("#btn-siguiente");
   await page.tap("#btn-enviar");
   await page.waitForSelector("#vista-confirmacion:not([hidden])");
   await foto(page, "09-confirmacion-movil");
