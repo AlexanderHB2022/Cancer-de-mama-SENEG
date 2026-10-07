@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Encuesta Octubre Rosa</title>
+<meta name="description" content="Encuesta anónima de Octubre Rosa: comparte la pregunta que le harías a un experto en cáncer de mama. Comunidad Tec · Campus Sinaloa.">
+<meta name="theme-color" content="#D6336C">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 96'%3E%3Cpath d='M18 88 32 52C40 34 46 24 44 15 42 5 22 5 20 15 18 24 24 34 32 52L46 88' fill='none' stroke='%23D6336C' stroke-width='10' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap">
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+<!-- Moño rosa reutilizable -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="mono" viewBox="0 0 64 96">
+    <path d="M32 52 46 88" fill="none" stroke="currentColor" stroke-width="11" stroke-linecap="round"/>
+    <path d="M18 88 32 52C40 34 46 24 44 15 42 5 22 5 20 15 18 24 24 34 32 52" fill="none" stroke="var(--ribbon-gap)" stroke-width="15" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M18 88 32 52C40 34 46 24 44 15 42 5 22 5 20 15 18 24 24 34 32 52" fill="none" stroke="currentColor" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"/>
+  </symbol>
+</svg>
+
+<a class="skip" href="#contenido">Saltar al contenido</a>
+
+<div class="shell">
+  <main id="contenido" tabindex="-1">
+
+    <!-- ============ PORTADA ============ -->
+    <section class="vista portada" id="vista-portada" aria-labelledby="titulo-portada">
+      <div class="portada-grid">
+        <div class="portada-texto">
+          <span class="etiqueta">Comunidad Tec · Campus Sinaloa</span>
+          <h1 id="titulo-portada" class="titulo-portada">
+            <span>Octubre</span> <em>Rosa</em>
+          </h1>
+          <p class="subtitulo">Queremos conocer tus dudas sobre el cáncer de mama</p>
+          <p class="lead">Tu pregunta puede ayudar a que otras personas también encuentren respuestas.</p>
+
+          <div class="portada-acciones">
+            <button type="button" class="btn btn-primario btn-grande" id="btn-comenzar">
+              Comenzar encuesta <span aria-hidden="true" class="flecha">→</span>
+            </button>
+            <button type="button" class="btn btn-texto" id="btn-continuar" hidden>Continuar donde me quedé</button>
+          </div>
+
+          <ul class="datos" aria-label="Sobre la encuesta">
+            <li><strong>5</strong> preguntas</li>
+            <li><strong>1–2</strong> minutos</li>
+            <li><strong>Anónima</strong> sin nombre ni correo</li>
+          </ul>
+        </div>
+
+        <aside class="portada-arte" aria-hidden="true">
+          <div class="arte-circulo">
+            <svg class="arte-mono"><use href="#mono"/></svg>
+          </div>
+          <p class="arte-fecha"><span>19</span> de octubre</p>
+          <p class="arte-pie">Día Internacional de la Lucha contra el Cáncer de Mama</p>
+        </aside>
+      </div>
+    </section>
+
+    <!-- ============ ENCUESTA ============ -->
+    <section class="vista encuesta" id="vista-encuesta" hidden aria-label="Encuesta">
+      <header class="barra-encuesta">
+        <button type="button" class="marca" id="btn-marca" aria-label="Volver a la portada">
+          <svg class="marca-mono"><use href="#mono"/></svg>
+          <span>Octubre Rosa</span>
+        </button>
+        <div class="progreso">
+          <div class="progreso-texto">
+            <span id="progreso-etiqueta" aria-live="polite">Pregunta 1 de 5</span>
+            <span id="progreso-porcentaje" class="progreso-pct">0%</span>
+          </div>
+          <div class="progreso-pista" role="progressbar" aria-label="Progreso de la encuesta" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="progreso-barra">
+            <div class="progreso-relleno" id="progreso-relleno"></div>
+          </div>
+        </div>
+      </header>
+
+      <form id="formulario" novalidate>
+        <div class="tarjeta-pregunta" id="tarjeta-pregunta">
+          <div class="pasos" id="pasos">
+
+            <!-- Paso 1 -->
+            <fieldset class="paso" data-paso="1" data-campo="rol">
+              <legend class="pregunta">
+                <span class="pregunta-num">Pregunta 1</span>
+                <span class="pregunta-texto">¿Cuál es tu rol en la comunidad Tec? <abbr class="req" title="Obligatoria">*</abbr></span>
+              </legend>
+              <div class="opciones" id="opciones-rol"></div>
+            </fieldset>
+
+            <!-- Paso 2 -->
+            <fieldset class="paso" data-paso="2" data-campo="nivel_conocimiento" hidden>
+              <legend class="pregunta">
+                <span class="pregunta-num">Pregunta 2</span>
+                <span class="pregunta-texto">¿Qué tanto consideras que sabes sobre el cáncer de mama? <abbr class="req" title="Obligatoria">*</abbr></span>
+              </legend>
+              <div class="escala" aria-describedby="escala-ayuda">
+                <label class="escala-op"><input type="radio" name="nivel_conocimiento" id="nivel-1" value="1"><span>1</span></label>
+                <label class="escala-op"><input type="radio" name="nivel_conocimiento" id="nivel-2" value="2"><span>2</span></label>
+                <label class="escala-op"><input type="radio" name="nivel_conocimiento" id="nivel-3" value="3"><span>3</span></label>
+                <label class="escala-op"><input type="radio" name="nivel_conocimiento" id="nivel-4" value="4"><span>4</span></label>
+                <label class="escala-op"><input type="radio" name="nivel_conocimiento" id="nivel-5" value="5"><span>5</span></label>
+              </div>
+              <div class="escala-extremos" id="escala-ayuda">
+                <span>1 · Muy poco</span><span>5 · Mucho</span>
+              </div>
+            </fieldset>
+
+            <!-- Paso 3 -->
+            <fieldset class="paso" data-paso="3" data-campo="temas" hidden>
+              <legend class="pregunta">
+                <span class="pregunta-num">Pregunta 3</span>
+                <span class="pregunta-texto">¿Qué temas sobre el cáncer de mama te generan más dudas? <abbr class="req" title="Obligatoria">*</abbr></span>
+              </legend>
+              <p class="ayuda">Puedes elegir todos los que quieras.</p>
+              <div class="opciones opciones-chips" id="opciones-temas"></div>
+            </fieldset>
+
+            <!-- Paso 4: pregunta principal -->
+            <div class="paso paso-principal" data-paso="4" data-campo="pregunta_experto" hidden>
+              <span class="insignia-principal">
+                <svg class="insignia-mono" aria-hidden="true"><use href="#mono"/></svg>
+                Pregunta principal
+              </span>
+              <label class="pregunta pregunta-grande" for="pregunta_experto">
+                <span class="pregunta-num">Pregunta 4</span>
+                <span class="pregunta-texto">¿Qué le preguntarías a un experto en cáncer de mama para resolver tus dudas? <abbr class="req" title="Obligatoria">*</abbr></span>
+              </label>
+              <p class="ayuda" id="ayuda-principal">Tu pregunta puede ser sobre cualquier aspecto del cáncer de mama.</p>
+              <div class="campo-principal">
+                <textarea id="pregunta_experto" name="pregunta_experto" rows="6" maxlength="500"
+                  placeholder="Escribe aquí tu pregunta..." aria-describedby="ayuda-principal contador-principal" required></textarea>
+                <div class="campo-pie">
+                  <span class="atajo">Ctrl + Enter para continuar</span>
+                  <span class="contador" id="contador-principal" aria-live="polite"><span id="cuenta-principal">0</span> / 500</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Paso 5 -->
+            <div class="paso" data-paso="5" data-campo="otro_tema" hidden>
+              <label class="pregunta" for="otro_tema">
+                <span class="pregunta-num">Pregunta 5 · Opcional</span>
+                <span class="pregunta-texto">¿Hay algún otro tema relacionado con el cáncer de mama que te gustaría que se abordara?</span>
+              </label>
+              <textarea id="otro_tema" name="otro_tema" rows="3" maxlength="300" placeholder="Por ejemplo: alimentación, apoyo emocional, cómo acompañar a un familiar..." aria-describedby="contador-otro"></textarea>
+              <div class="campo-pie campo-pie-suave">
+                <span></span>
+                <span class="contador" id="contador-otro"><span id="cuenta-otro">0</span> / 300</span>
+              </div>
+            </div>
+
+          </div>
+
+          <p class="error-envio" id="error-envio" role="alert" hidden></p>
+
+          <div class="navegacion">
+            <button type="button" class="btn btn-secundario" id="btn-atras">
+              <span aria-hidden="true">←</span> Atrás
+            </button>
+            <button type="button" class="btn btn-primario" id="btn-siguiente" disabled>
+              Siguiente <span aria-hidden="true">→</span>
+            </button>
+            <button type="submit" class="btn btn-primario" id="btn-enviar" hidden disabled>
+              <span class="btn-etiqueta">Enviar respuesta</span>
+              <span class="spinner" aria-hidden="true"></span>
+            </button>
+          </div>
+          <p class="pista-requerida" id="pista-requerida" aria-live="polite"></p>
+        </div>
+      </form>
+    </section>
+
+    <!-- ============ CONFIRMACIÓN ============ -->
+    <section class="vista confirmacion" id="vista-confirmacion" hidden aria-labelledby="titulo-gracias">
+      <div class="tarjeta-gracias">
+        <div class="gracias-mono" aria-hidden="true"><svg><use href="#mono"/></svg></div>
+        <h1 id="titulo-gracias" tabindex="-1">¡Gracias por compartir tu pregunta!</h1>
+        <p class="lead">Tu pregunta será tomada en cuenta para identificar los temas que más interesan a nuestra comunidad.</p>
+        <figure class="cita" id="cita-enviada" hidden>
+          <figcaption>Tu pregunta</figcaption>
+          <blockquote id="cita-texto"></blockquote>
+        </figure>
+        <p class="nota-suave">Cada pregunta puede ayudar a generar conversaciones que promuevan la prevención y la detección oportuna.</p>
+        <button type="button" class="btn btn-secundario" id="btn-inicio">Volver al inicio</button>
+      </div>
+    </section>
+
+    <!-- ============ PANEL DE ADMINISTRADOR ============ -->
+    <section class="vista admin" id="vista-admin" hidden aria-labelledby="titulo-admin">
+      <header class="admin-cabecera">
+        <div>
+          <p class="admin-eyebrow"><svg class="marca-mono"><use href="#mono"/></svg> Octubre Rosa · Administración</p>
+          <h1 id="titulo-admin">Panel de respuestas</h1>
+          <p class="admin-estado" id="admin-estado"></p>
+        </div>
+        <div class="admin-acciones">
+          <button type="button" class="btn btn-secundario" id="btn-actualizar">Actualizar</button>
+          <button type="button" class="btn btn-secundario" id="btn-salir-admin">Salir</button>
+        </div>
+      </header>
+
+      <!-- Acceso -->
+      <div class="admin-acceso" id="admin-acceso" hidden>
+        <form class="tarjeta-acceso" id="form-acceso">
+          <h2>Acceso de administrador</h2>
+          <p id="acceso-texto">Escribe la clave de administrador para consultar las respuestas.</p>
+          <div class="campo-clave" id="campo-clave">
+            <label for="clave-admin">Clave</label>
+            <input type="password" id="clave-admin" autocomplete="current-password" required>
+          </div>
+          <p class="error-envio" id="error-acceso" role="alert" hidden></p>
+          <div class="acceso-botones">
+            <button type="button" class="btn btn-secundario" id="btn-cancelar-acceso">Volver a la encuesta</button>
+            <button type="submit" class="btn btn-primario" id="btn-entrar">
+              <span class="btn-etiqueta">Entrar</span><span class="spinner" aria-hidden="true"></span>
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <div class="admin-contenido" id="admin-contenido" hidden>
+        <div class="aviso-demo" id="aviso-demo" hidden>
+          <strong>Modo demostración.</strong> Las respuestas se guardan solo en este navegador. Para recopilar respuestas reales, configura Google Sheets (ver README).
+        </div>
+
+        <div class="kpis">
+          <div class="kpi kpi-principal">
+            <span class="kpi-etiqueta">Total de respuestas</span>
+            <span class="kpi-valor" id="kpi-total">0</span>
+          </div>
+          <div class="kpi">
+            <span class="kpi-etiqueta">Preguntas recibidas</span>
+            <span class="kpi-valor" id="kpi-preguntas">0</span>
+          </div>
+          <div class="kpi">
+            <span class="kpi-etiqueta">Conocimiento promedio</span>
+            <span class="kpi-valor"><span id="kpi-nivel">–</span><small> / 5</small></span>
+          </div>
+          <div class="kpi">
+            <span class="kpi-etiqueta">Última respuesta</span>
+            <span class="kpi-valor kpi-fecha" id="kpi-ultima">–</span>
+          </div>
+        </div>
+
+        <button type="button" class="btn btn-primario btn-csv" id="btn-csv">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m0 0-5-5m5 5 5-5M4 19h16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span>Descargar CSV</span>
+          <small id="csv-detalle">todas las respuestas</small>
+        </button>
+        <p class="csv-estado" id="csv-estado" role="status"></p>
+
+        <div class="graficas">
+          <article class="panel panel-ancho">
+            <h2>Temas que generan más dudas</h2>
+            <p class="panel-nota">Porcentaje de respuestas que marcaron cada tema.</p>
+            <div class="barras" id="grafica-temas"></div>
+          </article>
+          <article class="panel">
+            <h2>Distribución por rol</h2>
+            <div class="barras barras-compactas" id="grafica-roles"></div>
+          </article>
+          <article class="panel">
+            <h2>Nivel de conocimiento</h2>
+            <p class="panel-nota" id="nivel-resumen">Promedio –</p>
+            <div class="columnas" id="grafica-nivel"></div>
+          </article>
+        </div>
+
+        <article class="panel panel-tabla">
+          <div class="tabla-cabecera">
+            <h2>Respuestas individuales</h2>
+            <span class="conteo" id="conteo-filtro"></span>
+          </div>
+          <div class="filtros">
+            <div class="filtro filtro-busqueda">
+              <label for="filtro-texto" class="sr-only">Buscar en las preguntas</label>
+              <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2"/><path d="m20 20-3.5-3.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+              <input type="search" id="filtro-texto" placeholder="Buscar en las preguntas…" autocomplete="off">
+            </div>
+            <div class="filtro">
+              <label for="filtro-rol" class="sr-only">Filtrar por rol</label>
+              <select id="filtro-rol"><option value="">Todos los roles</option></select>
+            </div>
+            <div class="filtro">
+              <label for="filtro-tema" class="sr-only">Filtrar por tema</label>
+              <select id="filtro-tema"><option value="">Todos los temas</option></select>
+            </div>
+          </div>
+          <div class="tabla-envoltura">
+            <table class="tabla" id="tabla">
+              <thead>
+                <tr>
+                  <th scope="col">Fecha</th>
+                  <th scope="col">Rol</th>
+                  <th scope="col">Conocimiento</th>
+                  <th scope="col">Temas</th>
+                  <th scope="col">Pregunta</th>
+                  <th scope="col">Otro tema</th>
+                </tr>
+              </thead>
+              <tbody id="tabla-cuerpo"></tbody>
+            </table>
+          </div>
+          <p class="vacio" id="tabla-vacia" hidden></p>
+        </article>
+      </div>
+
+      <div class="admin-cargando" id="admin-cargando" hidden>
+        <span class="spinner spinner-grande" aria-hidden="true"></span>
+        <p>Cargando respuestas…</p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="pie" id="pie">
+    <p>Esta encuesta tiene fines informativos y de recopilación de preguntas. No sustituye la orientación de un profesional de la salud.</p>
+    <p class="pie-secundario">
+      <span>Encuesta anónima · Octubre Rosa · Tec de Monterrey, Campus Sinaloa</span>
+      <a href="#admin" class="enlace-admin" id="enlace-admin">Administración</a>
+    </p>
+  </footer>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+<script src="js/config.js"></script>
+<script src="js/storage.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
