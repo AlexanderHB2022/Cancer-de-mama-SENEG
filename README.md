@@ -141,7 +141,7 @@ Las pruebas recorren la encuesta completa en escritorio y en móvil (390 px). Ve
 ## Personalizar
 
 - **Textos y preguntas**: `index.html`. Las listas de roles y temas están en `js/app.js` (`ROLES`, `TEMAS`) y, si usas Google Sheets, también en `apps-script/Code.gs`.
-- **Colores**: variables al inicio de `css/styles.css` (`--pink`, `--pink-light`, `--pink-soft`, `--text`, `--muted`, `--border`).
+- **Colores**: variables al inicio de `css/styles.css` (`--tema` es el rosa principal; `--fondo`, `--tarjeta`, `--texto`, `--suave` y `--borde` controlan el resto).
 - **Límites de caracteres y nombre del CSV**: `js/config.js`.
 
 ---

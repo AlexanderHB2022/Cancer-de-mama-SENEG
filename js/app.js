@@ -135,8 +135,8 @@
     input.name = nombre;
     input.value = valor;
     input.id = nombre + "-" + (i + 1);
-    const marca = document.createElement("span");
-    marca.className = "marca-opcion";
+    const marca = document.createElement("i");
+    marca.className = tipo === "radio" ? "radio" : "check";
     const texto = document.createElement("span");
     texto.textContent = valor;
     label.append(input, marca, texto);
@@ -399,11 +399,11 @@
     $("#btn-continuar").hidden = !conBorrador;
     $("#btn-comenzar").firstChild.textContent = conBorrador ? "Empezar de nuevo " : "Comenzar encuesta ";
     $("#btn-comenzar").classList.toggle("btn-primario", !conBorrador);
-    $("#btn-comenzar").classList.toggle("btn-secundario", conBorrador);
+    $("#btn-comenzar").classList.toggle("btn-texto", conBorrador);
     $("#btn-continuar").classList.toggle("btn-primario", conBorrador);
-    $("#btn-continuar").classList.toggle("btn-grande", conBorrador);
     $("#btn-continuar").classList.toggle("btn-texto", !conBorrador);
     if (conBorrador) $(".portada-acciones").prepend($("#btn-continuar"));
+    else $(".portada-acciones").prepend($("#btn-comenzar"));
     mostrarVista("portada");
   }
 
@@ -662,26 +662,8 @@
       };
       celda("td-fecha", "Fecha").textContent = fechaLegible(r.timestamp);
       celda("td-rol", "Rol").textContent = r.rol || "—";
-      const tdNivel = celda("td-nivel", "Conocimiento");
-      const puntos = document.createElement("span");
-      puntos.className = "puntos";
-      puntos.setAttribute("aria-hidden", "true");
-      for (let i = 1; i <= 5; i++) {
-        const p = document.createElement("i");
-        if (i <= r.nivel_conocimiento) p.className = "on";
-        puntos.appendChild(p);
-      }
-      tdNivel.append(puntos, document.createTextNode(r.nivel_conocimiento ? r.nivel_conocimiento + " / 5" : "—"));
-      const tdTemas = celda("td-temas", "Temas");
-      const chips = document.createElement("div");
-      chips.className = "chips";
-      r.temas.forEach((t) => {
-        const c = document.createElement("span");
-        c.className = "chip";
-        c.textContent = t;
-        chips.appendChild(c);
-      });
-      tdTemas.appendChild(chips);
+      celda("td-nivel", "Conocimiento").textContent = r.nivel_conocimiento ? r.nivel_conocimiento + " / 5" : "—";
+      celda("td-temas", "Temas").textContent = r.temas.join(", ") || "—";
       resaltar(celda("td-pregunta", "Pregunta"), r.pregunta_experto, termino);
       const tdOtro = celda("td-otro", "Otro tema");
       if (r.otro_tema) resaltar(tdOtro, r.otro_tema, termino);

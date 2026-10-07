@@ -34,13 +34,13 @@ async function contestar(page, { pregunta = PREGUNTA, otro = "Alimentación, y a
   await page.click("text=Estudiante profesional");
   ok(!(await page.isDisabled("#btn-siguiente")), "Siguiente habilitado tras elegir rol");
   await page.click("#btn-siguiente");
-  await page.click(".escala-op:nth-child(2)");
+  await page.click(".escala-op:has(#nivel-2)");
   await page.click("#btn-siguiente");
   ok(await page.isDisabled("#btn-siguiente"), "Temas: requiere al menos uno");
   await page.click("text=Detección temprana");
   await page.click("text=Mastografía");
   await page.click("#btn-siguiente");
-  ok(await page.isVisible(".paso-principal"), "Pregunta principal visible");
+  ok(await page.isVisible(".pregunta-principal"), "Pregunta principal visible");
   await page.fill("#pregunta_experto", pregunta);
   ok((await page.textContent("#cuenta-principal")) === String(pregunta.length), "Contador de caracteres");
   await page.click("#btn-siguiente");
@@ -137,7 +137,7 @@ const browser = await chromium.launch({ executablePath: process.env.CHROMIUM || 
   await page.tap("#btn-comenzar");
   await page.tap("text=Profesor(a)");
   await page.tap("#btn-siguiente");
-  await page.tap(".escala-op:nth-child(4)");
+  await page.tap(".escala-op:has(#nivel-4)");
   await foto(page, "06-escala-movil");
   await page.tap("#btn-siguiente");
   await page.tap("text=Prevención");
